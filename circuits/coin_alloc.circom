@@ -6,6 +6,7 @@ include "circomlib/circuits/comparators.circom";
 template CoinAlloc(n) {
     signal input v[n];
     signal input id[n];
+    signal input r[n];
     signal input total;
 
     signal output c[n];
@@ -23,9 +24,10 @@ template CoinAlloc(n) {
 
         sum = sum + v[i];
 
-        hasher[i] = Poseidon(2);
+        hasher[i] = Poseidon(3);
         hasher[i].inputs[0] <== v[i];
         hasher[i].inputs[1] <== id[i];
+        hasher[i].inputs[2] <== r[i];
         c[i] <== hasher[i].out;
     }
 
