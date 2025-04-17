@@ -3,7 +3,7 @@ pragma circom 2.1.6;
 include "circomlib/circuits/poseidon.circom";
 include "circomlib/circuits/comparators.circom";
 
-template CoinSettle(n) {
+template CoinAlloc(n) {
     signal input v[n];
     signal input id[n];
     signal input total;
@@ -33,4 +33,4 @@ template CoinSettle(n) {
 
 }
 
-component main { public [ total ] } = CoinSettle(10);
+component main { public [ total ] } = CoinAlloc(10);
