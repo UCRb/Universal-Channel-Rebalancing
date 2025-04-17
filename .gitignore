@@ -7,5 +7,4 @@ circuits/*.sym
 circuits/*.ptau
 circuits/*.zkey
 
-
-
+circuits/package-lock.json
