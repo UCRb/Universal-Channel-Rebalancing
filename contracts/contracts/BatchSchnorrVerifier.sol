@@ -49,4 +49,31 @@ contract BatchSchnorrVerifier {
 
         return true;
     }
+
+    function coinDeposit(
+        Signature[] calldata signatures,
+        bytes32[5] calldata valueList
+    ) external view returns (bool) {
+        require(signatures.length > 0, "No signatures provided");
+        require(valueList.length == 5, "Invalid value list length");
+
+        // Hash all value lists together to create the message
+        bytes32 message = keccak256(abi.encodePacked(valueList));
+
+        // Verify each signature
+        for (uint256 i = 0; i < signatures.length; i++) {
+            bool isValid = schnorr.verify(
+                signatures[i].parity,
+                signatures[i].px,
+                message,
+                signatures[i].e,
+                signatures[i].s
+            );
+            if (!isValid) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 } 
