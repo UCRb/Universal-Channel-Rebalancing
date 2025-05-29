@@ -25,7 +25,7 @@ export async function generateCircuitInputs(
   const key = new NodeRSA(privateKey);
   // const messagePadded = '0xwerwerwer' // pre-computed: check circuits for more details
   // cost messagePadded = 'asdddddddd';
-  const messagePadded = Buffer.from(`${message}`);
+  const messagePadded = Buffer.from(`${message}`,'hex');
   const signature = key.sign(Buffer.from(`${message}`), 'base64', 'utf8');
   const publicKey = {
     n: key.exportKey('components').n.toString('base64'),
@@ -41,8 +41,8 @@ export async function generateCircuitInputs(
 async function generateTestData() {
   const testCases = [
     {
-      message: '0xwerwerwer',
-      server_key: '-----BEGIN RSA PRIVATE KEY-----\n' +
+      message: '0x2BA3A08C9BFD67B01281F2E96404A00B67E4BAFB4D7BAE9EC856DD4D9A0E567A',
+      private_key: '-----BEGIN RSA PRIVATE KEY-----\n' +
                   'MIIEpAIBAAKCAQEA1TBbdWgfopHuS973DmCjilZCessxQrpZ6A/Ms76txS7pkC/X\n'+
                   't+ev66K8XjdaLZk27s296azfPBgxn3kjoHVg1QXyHmbQsueoT8zx2o9JfjuIawSh\n'+
                   'D79V11WP7weFPchsa7zeMD9zmAuGvCmAk1saebJjhIwOLRtSSYxLnaZsSy9Vo1RQ\n'+
@@ -71,7 +71,7 @@ async function generateTestData() {
                   '-----END RSA PRIVATE KEY-----'
     },
     {
-      message: '0xwerwerwer',
+      message: '0x2BA3A08C9BFD67B01281F2E96404A00B67E4BAFB4D7BAE9EC856DD4D9A0E567A',
       private_key: '-----BEGIN RSA PRIVATE KEY-----\n'+
                   'MIIEpAIBAAKCAQEAj02Q65/uoi9yq8hvzi1qBBWFQ//H3+iXZmSmmFjXXGbU2K8o\n'+
                   'TZPCAnmSr28F/vBlvt3iBv1GXq0GWbaaITnmq3yMc6fT3BPvElDBNt4MXpY9BcSx\n'+
@@ -101,8 +101,8 @@ async function generateTestData() {
                   '-----END RSA PRIVATE KEY-----'
     },
     {
-      message: '0xwerwerwer',
-      server_key: '-----BEGIN RSA PRIVATE KEY-----\n' +
+      message: '0x2BA3A08C9BFD67B01281F2E96404A00B67E4BAFB4D7BAE9EC856DD4D9A0E567A',
+      private_key: '-----BEGIN RSA PRIVATE KEY-----\n' +
                   'MIIEpAIBAAKCAQEA1TBbdWgfopHuS973DmCjilZCessxQrpZ6A/Ms76txS7pkC/X\n'+
                   't+ev66K8XjdaLZk27s296azfPBgxn3kjoHVg1QXyHmbQsueoT8zx2o9JfjuIawSh\n'+
                   'D79V11WP7weFPchsa7zeMD9zmAuGvCmAk1saebJjhIwOLRtSSYxLnaZsSy9Vo1RQ\n'+
@@ -131,7 +131,7 @@ async function generateTestData() {
                   '-----END RSA PRIVATE KEY-----'
     },
     {
-      message: '0xwerwerwer',
+      message: '0x2BA3A08C9BFD67B01281F2E96404A00B67E4BAFB4D7BAE9EC856DD4D9A0E567A',
       private_key: '-----BEGIN RSA PRIVATE KEY-----\n'+
                   'MIIEpAIBAAKCAQEAj02Q65/uoi9yq8hvzi1qBBWFQ//H3+iXZmSmmFjXXGbU2K8o\n'+
                   'TZPCAnmSr28F/vBlvt3iBv1GXq0GWbaaITnmq3yMc6fT3BPvElDBNt4MXpY9BcSx\n'+
@@ -168,11 +168,16 @@ async function generateTestData() {
     fs.mkdirSync(outputDir, { recursive: true });
   }
 
-   // Initialize result object with empty arrays
-   const result = {
+   // Initialize result object with explicit types
+   const result: {
+    sig: string[][];
+    pk: string[][];
+    l: number; // Or the correct type for l
+    msg: string[][];
+  } = {
     sig: [],
     pk: [],
-    l: [],
+    l: 0, // Placeholder for l, adjust as needed
     msg: []
   };
 
@@ -182,14 +187,16 @@ async function generateTestData() {
     console.log('Generating test case...');
     
     // Generate JWT
-    const { message, pubkey, signature } = generateCircuitInputs(testCase.message, testCase.private_key);
+    const { message, pubkey, signature } = await generateCircuitInputs(testCase.message, testCase.private_key);
 
-
-    // Add values to respective arrays
-    for (const [key, value] of Object.entries(authInputs)) {
-      result[key as keyof typeof result].push(value as never);
+    if (result.sig.length < 4) {
+      // result.msg.push(message);
+      result.pk.push(pubkey);
+      result.sig.push(signature);
     }
   }
+
+  result.msg.push(["0x10","0x10","0x10"]); 
 
   // Save merged results
   fs.writeFileSync(
